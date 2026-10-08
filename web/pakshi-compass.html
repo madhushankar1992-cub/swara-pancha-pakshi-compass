@@ -77,6 +77,7 @@ select, input { font: inherit; color: var(--fg); background: var(--sunk); border
 .now .window { font-family: var(--f-mono); font-size: .95rem; color: var(--muted); }
 .next { display: flex; gap: 6px; flex-wrap: wrap; }
 .next > span { display: inline-flex; gap: 6px; align-items: center; border-radius: 10px; padding: 5px 9px; background: var(--surface); border: 1px solid var(--line); font-size: .8rem; }
+.speak { margin-top: 8px; padding: 6px 12px; font-size: .85rem; }
 .next > span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--rc); }
 .next .mono { font-size: .78rem; font-weight: 500; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; }
@@ -254,6 +255,7 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
       <button class="btn" id="icsBtn" type="button">Save phone alerts for this place</button>
       <button class="btn ghost" id="appBtn" type="button">Save this app for phone browser</button>
     </div>
+    <label class="row" style="align-items:center;gap:8px;font-size:.9rem"><input type="checkbox" id="voice" style="width:auto"> Speak each new period aloud (while the app is open)</label>
     <label class="row" style="align-items:center;gap:8px;font-size:.9rem"><input type="checkbox" id="chime" style="width:auto"> Chime on this page when a new period starts</label>
     <p class="note" id="saveNote"></p>
   </section>
@@ -323,7 +325,7 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
   const state = {
     place: validPlace(storedPlace) ? withZone(storedPlace) : DEFAULT_PLACE,
     bird: typeof storedBird === 'string' && 'VOCKP'.includes(storedBird) && storedBird.length === 1 ? storedBird : BIRTH_BIRD.chosen,
-    view: 0, heading: null, chime: store.get('chime', false), lastKey: null,
+    view: 0, heading: null, chime: store.get('chime', false), voice: store.get('voice', false), lastKey: null,
   };
   const cache = new Map();
 
@@ -359,6 +361,28 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
       + '<p class="note">Both files are git-ignored so they never reach GitHub.</p>';
   }
 
+  // ---------- voice ----------
+  function browserSpeak(text) {
+    try {
+      if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return false;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-IN';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+  function speakNow(fromUser) {
+    const now = Date.now();
+    const p = currentDay(now).periods.find((x) => now >= x.start && now < x.end);
+    if (!p) return;
+    const text = E.periodSpeech(p, curTz(now), now, birdName(state.bird));
+    if (typeof window.PakshiNativeSpeak === 'function') { window.PakshiNativeSpeak(text); return; }
+    if (!browserSpeak(text) && fromUser) $('saveNote').textContent = 'Voice is not available in this view. Use the phone app.';
+  }
+  window.PakshiSpeakNow = () => speakNow(false);
+
   // ---------- render ----------
   const RING_C = 2 * Math.PI * 44;
   const ringOffset = (p, now) => RING_C * (1 - Math.min(1, Math.max(0, (p.end - now) / (p.end - p.start))));
@@ -388,6 +412,7 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
           <span class="pill">${p.rating.label}</span>
           <div class="big">${esc(p.sub.birdName)} ${esc(p.sub.actName)}</div>
           <div class="window">${hhmm(p.start)} – ${hhmm(p.end)} · Yama ${p.yama} ${p.half === 'd' ? 'day' : 'night'}</div>
+          <button class="btn ghost speak" id="speakBtn" type="button">🔊 Speak</button>
         </div>
       </div>
       ${upcoming.length ? `<div class="next" aria-label="Coming up">${upcoming.map((u) => `<span data-r="${u.rating.key}"><b class="mono">${hhmm(u.start)}</b> ${u.rating.label}</span>`).join('')}</div>` : ''}
@@ -666,6 +691,7 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
     const cur = currentDay(now);
     const shown = state.view === 0 ? cur : day(addDays(cur.date, 1));
     const p = renderNow(cur, now);
+    if ($('speakBtn')) $('speakBtn').onclick = () => speakNow(true);
     renderSwara(cur, now, p);
     renderDial(p, now);
     renderStrip(shown, now);
@@ -678,6 +704,7 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
     $('who').textContent = `${ME.name ? ME.name + ' · ' : ''}${birdName(state.bird)} · Bhogar Pancha Pakshi`;
     const key = p.start;
     if (state.lastKey && state.lastKey !== key && state.chime) chime();
+    if (state.lastKey && state.lastKey !== key && state.voice) speakNow(false);
     state.lastKey = key;
   }
 
@@ -773,6 +800,8 @@ footer { font-size: .78rem; color: var(--muted); text-align: center; }
     } catch (e) { /* audio blocked */ }
   }
   $('chime').checked = !!state.chime;
+  $('voice').checked = !!state.voice;
+  $('voice').onchange = (e) => { state.voice = e.target.checked; store.set('voice', state.voice); if (state.voice) speakNow(true); };
   $('chime').onchange = (e) => { state.chime = e.target.checked; store.set('chime', state.chime); if (state.chime) chime(); };
 
   // ---------- saving files ----------

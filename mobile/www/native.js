@@ -8,6 +8,14 @@
   const C = window.Capacitor;
   if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
   const LN = C.Plugins.LocalNotifications;
+  const TTS = C.Plugins.TextToSpeech;
+  if (TTS) {
+    // the phone's own text-to-speech voice: works offline
+    window.PakshiNativeSpeak = (text) => {
+      const say = (lang) => TTS.speak({ text, lang, rate: 0.95, pitch: 1.0, volume: 1.0 });
+      TTS.stop().catch(() => {}).then(() => say('en-IN').catch(() => say('en-US').catch(() => {})));
+    };
+  }
   const E = window.PakshiEngine;
   const MIN = 60000;
   const DAYS_AHEAD = 4;               // about 140 alerts; re-planned every time the app opens
@@ -117,7 +125,7 @@
     const panel = document.getElementById('alertsPanel');
     if (!panel || document.getElementById('nativeRefresh')) return;
     const p = panel.querySelector('p.note');
-    if (p) p.textContent = 'This phone rings an alert at every period change, even offline. Alerts are planned 4 days ahead and re-planned each time you open the app.';
+    if (p) p.textContent = 'This phone rings an alert at every period change, even offline. Tap an alert to hear it spoken. Alerts are planned 4 days ahead and re-planned each time you open the app.';
     const btn = document.createElement('button');
     btn.className = 'btn'; btn.id = 'nativeRefresh'; btn.type = 'button'; btn.textContent = 'Re-plan alerts now';
     btn.onclick = () => reschedule('button');
@@ -127,6 +135,8 @@
 
   async function boot() {
     adaptAlertsPanel();
+    // tapping an alert opens the app and reads the current period aloud
+    try { LN.addListener('localNotificationActionPerformed', () => setTimeout(() => { if (window.PakshiSpeakNow) window.PakshiSpeakNow(); }, 700)); } catch (e) { /* older plugin */ }
     try {
       await LN.createChannel({ id: CHANNEL, name: 'Pancha Pakshi periods', description: 'An alert at every Pancha Pakshi sub-period', importance: 4, visibility: 1, vibration: true });
     } catch (e) { /* channel exists */ }

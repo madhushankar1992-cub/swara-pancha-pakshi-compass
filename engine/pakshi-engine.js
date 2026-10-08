@@ -489,6 +489,33 @@
     return out.join('\r\n');
   }
 
+  /** A short spoken summary of a period, for text-to-speech. birdName is the user's bird (optional). */
+  function speakTime(ms, tz) {
+    const d = new Date(ms + tz * MIN);
+    const h = d.getUTCHours(), m = d.getUTCMinutes();
+    if (h === 0 && m === 0) return 'midnight';
+    if (h === 12 && m === 0) return 'noon';
+    return `${h % 12 || 12}${m ? ':' + pad2(m) : ''} ${h < 12 ? 'a.m.' : 'p.m.'}`;
+  }
+  function periodSpeech(p, tz, now, birdName) {
+    const left = Math.max(0, Math.round((p.end - (now || Date.now())) / MIN));
+    const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+    const tidy = (t) => cap(t.replace(/\s*—\s*/g, ', ').replace(/\s*\/\s*/g, ' or ').replace(/\s*\(([^)]*)\)/g, ', $1'));
+    const dos = p.dos.filter((x) => !/nostril/i.test(x)).slice(0, 3).map(tidy);
+    const avoid = p.donts.slice(0, 2).map((x) => tidy(x.replace(/^Avoid\s+/i, '').replace(/^Do not start/i, 'starting').replace(/^Do not\s+/i, '')));
+    const breathGood = (p.swaraInfo && p.swaraInfo.good[0] || '').toLowerCase();
+    const parts = [
+      `${p.rating.label} period until ${speakTime(p.end, tz)}, ${left} minute${left === 1 ? '' : 's'} left.`,
+      `Your ${birdName || 'bird'} is ${p.main.name.toLowerCase()} this yama. The sub-period is ${p.sub.birdName} ${p.sub.actName.toLowerCase()}, ${p.sub.palan.toLowerCase()}.`,
+      dos.length ? `Do: ${dos.join('. ')}.` : '',
+      avoid.length ? `Avoid: ${avoid.join('. ')}.` : '',
+      p.direction.face === 'Centre' ? 'Stay at your base, no special direction.' : `Face ${p.direction.face}.`,
+      `Breath: ${p.swaraKey === 'L' ? 'left, the moon breath' : 'right, the sun breath'}${breathGood ? ', good for ' + breathGood : ''}.`,
+      p.notes.length ? `Note: ${tidy(p.notes[0])}.` : '',
+    ];
+    return parts.filter(Boolean).join(' ');
+  }
+
   /** Summary line used by phone notifications and PC popups. */
   function periodTitle(p, tz) {
     return `${p.rating.emoji} ${p.rating.label} till ${localHHMM(p.end, tz)} · ${p.sub.birdName} ${p.sub.actName} · Face ${p.direction.face} · ${p.swaraKey === 'L' ? '🌙 Left' : '☀️ Right'} breath`;
@@ -542,7 +569,7 @@
 
   return {
     computeDay, birthBird, ayanamsa, ascSid, moonSid, tithiAt, nakAt, lagnaAt, sunEvents,
-    buildICS, periodTitle, periodBody, localHHMM, tzOffsetMin, SWARA_ACTS,
+    buildICS, periodTitle, periodBody, periodSpeech, localHHMM, tzOffsetMin, SWARA_ACTS,
     BIRD, ACT, META, RASI, NAKSHATRA, DAYS, DAY_NAMES,
   };
 });
