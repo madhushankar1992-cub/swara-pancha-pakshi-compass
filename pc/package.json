@@ -1,0 +1,7 @@
+{
+  "name": "swara-pakshi-pc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PC pop-ups and calendar maker for Swara Pancha Pakshi Compass",
+  "dependencies": { "astronomy-engine": "2.1.19" }
+}

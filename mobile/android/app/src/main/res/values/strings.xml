@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Swara Pancha Pakshi Compass</string>
+    <string name="title_activity_main">Swara Pancha Pakshi Compass</string>
+    <string name="package_name">com.madhushankar.swarapakshi</string>
+    <string name="custom_url_scheme">com.madhushankar.swarapakshi</string>
+</resources>

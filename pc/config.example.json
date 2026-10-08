@@ -1,0 +1,8 @@
+{
+  "place": { "name": "Chennai", "lat": 13.0827, "lon": 80.2707, "tz": 330 },
+  "bird": "V",
+  "natal": { "moonRasi": 0, "nak": 0 },
+  "quietFrom": "22:30",
+  "quietTo": "05:00",
+  "useWindowsLocation": true
+}

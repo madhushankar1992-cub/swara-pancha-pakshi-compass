@@ -1,0 +1,63 @@
+SWARA PANCHA PAKSHI COMPASS - how to use
+========================================
+
+Your bird: set "bird" in config.json (V, O, C, K or P) and your birth Moon sign/star in "natal".
+Timetables: pakshi-data.js, generated locally from your own course PDFs (engine/parse_pdfs.py).
+Place: Chennai by default. If Windows Location is switched on, the PC follows it.
+
+
+1. PC POP-UPS
+-------------
+- A pop-up appears at every sub-period change (about every 12 to 48 minutes).
+- Colour bar: green = Excellent/Good, yellow = Average, orange = Weak, red = Avoid.
+- Buttons: "OK" closes it. "Snooze 1 hour" silences pop-ups for 60 minutes.
+- Quiet hours: no pop-ups between 22:30 and 05:00 (change in config.json).
+- It starts by itself when you sign in to Windows.
+- Turn off for good: right-click uninstall.ps1 > Run with PowerShell.
+- If pop-ups stop, check pakshi.log in this folder.
+
+
+2. PHONE ALERTS (work offline)
+------------------------------
+Your phone calendar rings each alert, even with no internet.
+
+One-time setup (Android / Google Calendar), on this PC:
+  a) Open calendar.google.com and sign in with the same Google account as your phone.
+  b) Left side: "Other calendars" > "+" > "Create new calendar". Name it: Pancha Pakshi.
+  c) Open that calendar's Settings > "Event notifications" > Add notification >
+     set it to "0 minutes" (at time of event) as a Notification.
+  d) Settings (gear) > "Import & export" > Import > choose the file
+     Pancha-Pakshi-Chennai-from-...-part1.ics in this folder > "Add to calendar": Pancha Pakshi > Import.
+     Repeat for ...-part2.ics (each file holds 15 days).
+  e) On your phone, open Google Calendar > Settings > Pancha Pakshi > make sure notifications are on.
+
+iPhone: send the .ics file to yourself (mail or Files) and tap it > Add All.
+
+The two files cover 30 days. To make the next month (or a new town), open a Command Prompt here and run:
+    node make-calendar.js
+    node make-calendar.js --city Madurai --lat 9.9252 --lon 78.1198
+Then import the new file the same way (delete the old Pancha Pakshi calendar first to avoid duplicates).
+
+
+3. LIVE APP
+-----------
+The Pakshi Compass page shows the current period, a direction dial, the day strip, panchang,
+Ashtakarma windows and the full timetable. Pick your town at the top right.
+The app's "Save this app for phone browser" button saves pakshi-compass.html to your phone: open it in Chrome
+and, where the browser allows, it uses GPS and the compass automatically.
+
+
+4. WHAT THE ADVICE IS BASED ON
+------------------------------
+- Main verdict: the course result (palan) for your bird's yama and sub-period.
+- Adjusted by: Padu / Authority bird of the day, Rahu Kalam, Yamagandam, Kuligai,
+  Chandrashtamam and Tara bala (from your birth Moon sign and star), rising-sign bird.
+- Direction: face your bird's direction when it is strong; face the ruling bird's direction
+  when yours is weak. Avoid travelling in the day's Soolam direction and
+  against the breath rule (right nostril: avoid West/South; left: avoid East/North).
+- Breath (Swara): Shiva Swarodaya rule by tithi at sunrise, switching every hour.
+- Ashtakarma: paksha + day/night + facing direction (traditional rules), with the rising
+  sign (lagna) and tithi shown. Use only with initiation and for good, protective purposes.
+
+Files here: daemon.js (pop-up service), popup.ps1 (window), location.ps1 (Windows location),
+make-calendar.js (phone alerts), config.json (settings), pakshi.log (activity log).

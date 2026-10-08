@@ -1,0 +1,8 @@
+{
+  "appId": "com.madhushankar.swarapakshi",
+  "appName": "Swara Pancha Pakshi Compass",
+  "webDir": "www",
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_pakshi", "iconColor": "#0D7480" }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "swara-pancha-pakshi-compass",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal Swara Pancha Pakshi Compass app (Capacitor)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/geolocation": "^8.2.3",
+    "@capacitor/local-notifications": "^8.3.1"
+  }
+}

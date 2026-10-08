@@ -1,0 +1,848 @@
+<meta charset="utf-8">
+<title>Swara Pancha Pakshi Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style id="app-css">
+/* Layout: one phone-first column (max 560px) — "now" card first, then direction dial, day strip, panchang, timeline.
+   Palette: kolam rice-white paper + indigo ink, peacock-teal accent (Murugan's peacock); verdict colours are semantic, separate from the accent. */
+:root {
+  --bg: #f3f4ef; --surface: #ffffff; --sunk: #e9ebe3; --line: #d6dacd;
+  --fg: #172036; --muted: #5b6577; --accent: #0d7480; --accent-ink: #ffffff;
+  --r-excellent: #17804a; --r-good: #3f9e63; --r-average: #b38a12; --r-poor: #cf6f1f; --r-avoid: #bf2f2f;
+  --r-excellent-bg: #dff1e6; --r-good-bg: #e7f4ea; --r-average-bg: #f6eed2; --r-poor-bg: #f9e5d3; --r-avoid-bg: #f7dcdc;
+  --sun: #d99a00; --moon: #5a6fb0; --moon-bg: #e6eaf6; --sunb-bg: #fbefd2;
+  --f-display: "Marcellus", "Cormorant Garamond", Georgia, serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1517; --surface: #152024; --sunk: #0f1a1d; --line: #26363a;
+    --fg: #e6ece8; --muted: #95a6a6; --accent: #3cc0c9; --accent-ink: #062226;
+    --r-excellent: #43c37b; --r-good: #6fcf8f; --r-average: #e2bd45; --r-poor: #f0954b; --r-avoid: #f06a63;
+    --r-excellent-bg: #12301f; --r-good-bg: #15301f; --r-average-bg: #33290c; --r-poor-bg: #3a2312; --r-avoid-bg: #3c1716;
+    --sun: #f2c14e; --moon: #9fb2ee; --moon-bg: #1b2340; --sunb-bg: #3a2e10; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1517; --surface: #152024; --sunk: #0f1a1d; --line: #26363a;
+  --fg: #e6ece8; --muted: #95a6a6; --accent: #3cc0c9; --accent-ink: #062226;
+  --r-excellent: #43c37b; --r-good: #6fcf8f; --r-average: #e2bd45; --r-poor: #f0954b; --r-avoid: #f06a63;
+  --r-excellent-bg: #12301f; --r-good-bg: #15301f; --r-average-bg: #33290c; --r-poor-bg: #3a2312; --r-avoid-bg: #3c1716;
+  --sun: #f2c14e; --moon: #9fb2ee; --moon-bg: #1b2340; --sunb-bg: #3a2e10; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5; margin: 0; }
+#shell { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 12px 40px; display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h2 { font-size: 1.15rem; }
+.mono, time, .t { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 9px 14px; font-weight: 600; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/* header: a field of kolam rice-flour dots behind the name */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 18px 16px 14px; border-radius: 18px; border: 1px solid var(--line);
+  background-color: var(--surface);
+  background-image: radial-gradient(circle, var(--line) 1.3px, transparent 1.6px);
+  background-size: 16px 16px; background-position: 8px 8px; }
+.top h1 { font-size: 1.9rem; line-height: 1.05; letter-spacing: .01em; }
+.top h1 span { color: var(--accent); }
+.top > div { background: var(--surface); padding: 2px 8px 2px 0; border-radius: 8px; }
+.who { color: var(--muted); font-size: .85rem; }
+.place { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: .88rem; display: inline-flex; gap: 6px; align-items: center; max-width: 100%; }
+.place .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.place .dot.live { background: var(--r-excellent); }
+#placePanel { gap: 12px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.row > label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); flex: 1 1 120px; min-width: 0; }
+select, input { font: inherit; color: var(--fg); background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+
+/* now card */
+.now { border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; background: var(--rbg, var(--surface)); border: 1px solid var(--line); border-top: 6px solid var(--rc, var(--line)); }
+.hero { display: grid; grid-template-columns: 104px 1fr; gap: 16px; align-items: center; }
+.ring { width: 104px; height: 104px; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .left { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.ring .left b { font-family: var(--f-mono); font-size: 1.6rem; font-weight: 500; }
+.ring .left small { font-size: .7rem; color: var(--muted); margin-top: 3px; letter-spacing: .06em; text-transform: uppercase; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: .85rem; color: #fff; background: var(--rc, var(--muted)); width: fit-content; }
+.now .big { font-family: var(--f-display); font-size: 1.9rem; line-height: 1.1; margin-top: 6px; }
+.now .window { font-family: var(--f-mono); font-size: .95rem; color: var(--muted); }
+.next { display: flex; gap: 6px; flex-wrap: wrap; }
+.next > span { display: inline-flex; gap: 6px; align-items: center; border-radius: 10px; padding: 5px 9px; background: var(--surface); border: 1px solid var(--line); font-size: .8rem; }
+.next > span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--rc); }
+.next .mono { font-size: .78rem; font-weight: 500; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+.lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 440px) { .lists { grid-template-columns: 1fr; } }
+.lists ul { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+.flag { display: inline-block; font-size: .78rem; border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; margin: 2px 4px 0 0; background: var(--surface); }
+
+/* rating tokens */
+[data-r="excellent"] { --rc: var(--r-excellent); --rbg: var(--r-excellent-bg); }
+[data-r="good"] { --rc: var(--r-good); --rbg: var(--r-good-bg); }
+[data-r="average"] { --rc: var(--r-average); --rbg: var(--r-average-bg); }
+[data-r="poor"] { --rc: var(--r-poor); --rbg: var(--r-poor-bg); }
+[data-r="avoid"] { --rc: var(--r-avoid); --rbg: var(--r-avoid-bg); }
+
+/* direction */
+.dirwrap { display: grid; grid-template-columns: 180px 1fr; gap: 14px; align-items: center; }
+@media (max-width: 440px) { .dirwrap { grid-template-columns: 1fr; justify-items: center; } }
+#dial { width: 180px; height: 180px; max-width: 100%; }
+#dial text { font-family: var(--f-mono); font-size: 13px; fill: var(--fg); }
+.dirnote { font-size: .9rem; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+/* day strip */
+.strip { display: flex; height: 26px; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--line); }
+.strip i { display: block; height: 100%; background: var(--rc); min-width: 1px; }
+.strip .nowmark { position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--fg); border-radius: 2px; }
+.ticks { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: .72rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: .78rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--rc); margin-right: 5px; vertical-align: -1px; }
+
+/* timeline */
+.tl { display: flex; flex-direction: column; gap: 4px; }
+.tl details { border-left: 4px solid var(--rc); background: var(--sunk); border-radius: 6px; }
+.tl details[open] { background: var(--rbg); }
+.tl summary { list-style: none; display: grid; grid-template-columns: 96px 1fr auto; gap: 8px; padding: 7px 10px; align-items: center; font-size: .88rem; }
+.tl summary::-webkit-details-marker { display: none; }
+.tl .when { font-family: var(--f-mono); font-size: .8rem; }
+.tl .what { min-width: 0; overflow-wrap: anywhere; }
+.tl .tag { font-size: .75rem; font-weight: 700; color: var(--rc); }
+.tl .body { padding: 0 12px 10px; font-size: .86rem; display: flex; flex-direction: column; gap: 4px; }
+.tl .cur { box-shadow: 0 0 0 2px var(--fg) inset; }
+.tabs { display: flex; gap: 6px; }
+.tabs button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: .85rem; }
+.tabs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.halfhead { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+
+/* swara */
+.swara { gap: 12px; }
+.nostrils { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nostrils > * { min-width: 0; }
+.nos small { overflow-wrap: anywhere; }
+.nos { border-radius: 14px; padding: 12px; border: 1px solid var(--line); background: var(--sunk); display: flex; flex-direction: column; gap: 2px; opacity: .55; }
+.nos .sym { font-size: 1.5rem; line-height: 1; }
+.nos b { font-family: var(--f-display); font-weight: 400; font-size: 1.15rem; }
+.nos small { color: var(--muted); font-size: .78rem; }
+.nos.on { opacity: 1; border-width: 2px; }
+.nos.L.on { background: var(--moon-bg); border-color: var(--moon); }
+.nos.R.on { background: var(--sunb-bg); border-color: var(--sun); }
+.swstrip { display: flex; height: 18px; border-radius: 6px; overflow: hidden; position: relative; border: 1px solid var(--line); }
+.swstrip i { flex: 1 1 0; display: block; }
+.swstrip i.L { background: var(--moon); opacity: .75; }
+.swstrip i.R { background: var(--sun); opacity: .8; }
+.swstrip .nowmark { position: absolute; top: -3px; bottom: -3px; width: 3px; background: var(--fg); border-radius: 2px; }
+.check { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.check button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: .85rem; }
+.check button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.verdict-line { border-radius: 10px; padding: 9px 12px; font-size: .9rem; background: var(--sunk); border-left: 4px solid var(--rc, var(--line)); }
+.harmony { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* my bird card */
+.birdcard { gap: 12px; }
+.bird-head { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; }
+.medal { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--sunk); border: 5px solid var(--birdc, var(--accent));
+  box-shadow: 0 0 0 1px var(--line), 0 0 0 7px var(--surface), 0 0 0 8px var(--line); }
+.medal svg { width: 44px; height: 44px; }
+.medal svg .ink { fill: var(--fg); }
+.medal svg .eye { fill: var(--sunk); }
+.bird-head h2 { font-size: 1.45rem; line-height: 1.1; }
+.bird-head .tamil { color: var(--muted); font-size: .85rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: .8rem; border-radius: 999px; padding: 3px 10px; background: var(--sunk); border: 1px solid var(--line); }
+.chip b { font-weight: 700; }
+.chip.warn { background: var(--r-avoid-bg); border-color: var(--r-avoid); }
+.chip.good { background: var(--r-excellent-bg); border-color: var(--r-excellent); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--sw); box-shadow: 0 0 0 1px var(--line); vertical-align: -1px; margin-right: 4px; }
+.traits { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+.birdcard details summary { cursor: pointer; font-weight: 600; font-size: .9rem; color: var(--accent); }
+.birdcard details[open] summary { margin-bottom: 8px; }
+.pk { overflow-x: auto; }
+
+/* misc */
+table.mini { border-collapse: collapse; width: 100%; font-size: .88rem; }
+table.mini td, table.mini th { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+table.mini th { color: var(--muted); font-weight: 600; font-size: .78rem; }
+.note { font-size: .82rem; color: var(--muted); }
+.karma li { margin-bottom: 4px; }
+.strength { font-weight: 700; }
+.strength.s-vs, .strength.s-s { color: var(--r-excellent); }
+.strength.s-f { color: var(--r-average); }
+.strength.s-w { color: var(--muted); }
+footer { font-size: .78rem; color: var(--muted); text-align: center; }
+@media (prefers-reduced-motion: no-preference) { .now { transition: background-color .4s ease; } }
+</style>
+
+<div id="shell">
+  <header class="top">
+    <div>
+      <h1>Swara Pancha Pakshi <span>Compass</span></h1>
+      <div class="who" id="who">Bhogar Pancha Pakshi</div>
+    </div>
+    <button class="place" id="placeBtn" aria-expanded="false" aria-controls="placePanel"><span class="dot" id="placeDot"></span><span id="placeName">Chennai</span> ▾</button>
+  </header>
+
+  <section class="panel" id="placePanel" hidden>
+    <h2>Where are you?</h2>
+    <div class="row">
+      <label>Town or city<select id="citySel"></select></label>
+      <button class="btn ghost" id="gpsBtn" type="button">Use my GPS</button>
+    </div>
+    <div class="row">
+      <label>Latitude<input id="latIn" inputmode="decimal"></label>
+      <label>Longitude<input id="lonIn" inputmode="decimal"></label>
+      <label>Time zone<select id="zoneSel"></select></label>
+      <button class="btn" id="coordBtn" type="button">Use these</button>
+    </div>
+    <p class="note" id="gpsNote">Sunrise, sunset, yamas and the rising sign are recalculated for the place you choose. When this page is opened directly in your phone's browser, GPS updates the place automatically as you travel.</p>
+  </section>
+
+  <section class="panel birdcard" id="myBird"></section>
+
+  <section class="now" id="now" aria-live="polite"></section>
+
+  <section class="panel swara" id="swara"></section>
+
+  <section class="panel" id="dirPanel">
+    <div class="eyebrow">Direction now</div>
+    <div class="dirwrap">
+      <svg id="dial" viewBox="0 0 200 200" role="img" aria-label="Direction dial"></svg>
+      <div class="dirnote" id="dirNote"></div>
+    </div>
+    <button class="btn ghost" id="compassBtn" type="button" hidden>Turn on live compass</button>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="eyebrow" id="stripTitle">Today, sunrise to sunrise</div>
+      <div class="tabs" role="group" aria-label="Choose day">
+        <button type="button" id="tabToday" aria-pressed="true">Today</button>
+        <button type="button" id="tabTomorrow" aria-pressed="false">Tomorrow</button>
+      </div>
+    </div>
+    <div class="strip" id="strip"></div>
+    <div class="ticks" id="ticks"></div>
+    <div class="legend">
+      <span data-r="excellent">Excellent</span><span data-r="good">Good</span><span data-r="average">Average</span><span data-r="poor">Weak</span><span data-r="avoid">Avoid</span>
+    </div>
+  </section>
+
+  <section class="panel" id="facts"></section>
+
+  <section class="panel" id="karma"></section>
+
+  <section class="panel">
+    <h2 id="tlTitle">Full timetable</h2>
+    <div class="tl" id="timeline"></div>
+  </section>
+
+  <section class="panel" id="alertsPanel">
+    <h2>Alerts</h2>
+    <p class="note">Phone alerts come from your phone calendar, so they ring even offline. The PC shows a pop-up at every period change, with a 1-hour snooze.</p>
+    <div class="row">
+      <button class="btn" id="icsBtn" type="button">Save phone alerts for this place</button>
+      <button class="btn ghost" id="appBtn" type="button">Save this app for phone browser</button>
+    </div>
+    <label class="row" style="align-items:center;gap:8px;font-size:.9rem"><input type="checkbox" id="chime" style="width:auto"> Chime on this page when a new period starts</label>
+    <p class="note" id="saveNote"></p>
+  </section>
+
+  <footer>Swara Pancha Pakshi Compass · Tables: your own Bhogar Pancha Pakshi course data (pakshi-data.js, not included in the public code). Breath rules: Shiva Swarodaya. Positions: Lahiri sidereal.<br>A traditional timing guide: never delay medical care or urgent decisions because of a timing.</footer>
+</div>
+
+<script src="astronomy.browser.min.js"></script>
+<script src="pakshi-data.js"></script>
+<script src="personal.js"></script>
+<script src="pakshi-engine.js"></script>
+<script id="app-js">
+(function () {
+  'use strict';
+  const SHELL_HTML = document.getElementById('shell').outerHTML; // pristine copy for "save as app"
+  const E = window.PakshiEngine;
+  const MIN = 60000;
+  const $ = (id) => document.getElementById(id);
+
+  const IN = 'Asia/Kolkata';
+  const CITIES = [
+    ['Chennai', 13.0827, 80.2707, IN], ['Kanchipuram', 12.8342, 79.7036, IN], ['Vellore', 12.9165, 79.1325, IN],
+    ['Tiruvannamalai', 12.2253, 79.0747, IN], ['Puducherry', 11.9416, 79.8083, IN], ['Hosur', 12.7409, 77.8253, IN],
+    ['Salem', 11.6643, 78.146, IN], ['Erode', 11.341, 77.7172, IN], ['Coimbatore', 11.0168, 76.9558, IN],
+    ['Tiruppur', 11.1085, 77.3411, IN], ['Udumalaipettai', 10.585, 77.247, IN], ['Palani', 10.45, 77.52, IN],
+    ['Dindigul', 10.3673, 77.9803, IN], ['Kodai Road', 10.221, 77.884, IN], ['Kodaikanal', 10.2381, 77.4892, IN],
+    ['Tiruchirappalli', 10.7905, 78.7047, IN], ['Thanjavur', 10.787, 79.1378, IN], ['Kumbakonam', 10.9617, 79.3881, IN],
+    ['Madurai', 9.9252, 78.1198, IN], ['Rameswaram', 9.2876, 79.3129, IN], ['Tirunelveli', 8.7139, 77.7567, IN],
+    ['Thoothukudi', 8.7642, 78.1348, IN], ['Nagercoil', 8.1833, 77.4119, IN], ['Kanyakumari', 8.0883, 77.5385, IN],
+    ['Bengaluru', 12.9716, 77.5946, IN], ['Mysuru', 12.2958, 76.6394, IN], ['Tirupati', 13.6288, 79.4192, IN],
+    ['Hyderabad', 17.385, 78.4867, IN], ['Visakhapatnam', 17.6868, 83.2185, IN], ['Kochi', 9.9312, 76.2673, IN],
+    ['Thiruvananthapuram', 8.5241, 76.9366, IN], ['Mumbai', 19.076, 72.8777, IN], ['Pune', 18.5204, 73.8567, IN],
+    ['Ahmedabad', 23.0225, 72.5714, IN], ['Delhi', 28.6139, 77.209, IN], ['Varanasi', 25.3176, 82.9739, IN],
+    ['Kolkata', 22.5726, 88.3639, IN],
+    ['Colombo', 6.9271, 79.8612, 'Asia/Colombo'], ['Kathmandu', 27.7172, 85.324, 'Asia/Kathmandu'], ['Dhaka', 23.8103, 90.4125, 'Asia/Dhaka'],
+    ['Dubai', 25.2048, 55.2708, 'Asia/Dubai'], ['Abu Dhabi', 24.4539, 54.3773, 'Asia/Dubai'], ['Muscat', 23.588, 58.3829, 'Asia/Muscat'],
+    ['Doha', 25.2854, 51.531, 'Asia/Qatar'], ['Kuwait City', 29.3759, 47.9774, 'Asia/Kuwait'], ['Riyadh', 24.7136, 46.6753, 'Asia/Riyadh'],
+    ['Singapore', 1.3521, 103.8198, 'Asia/Singapore'], ['Kuala Lumpur', 3.139, 101.6869, 'Asia/Kuala_Lumpur'], ['Bangkok', 13.7563, 100.5018, 'Asia/Bangkok'],
+    ['Jakarta', -6.2088, 106.8456, 'Asia/Jakarta'], ['Hong Kong', 22.3193, 114.1694, 'Asia/Hong_Kong'], ['Tokyo', 35.6762, 139.6503, 'Asia/Tokyo'],
+    ['Sydney', -33.8688, 151.2093, 'Australia/Sydney'], ['Melbourne', -37.8136, 144.9631, 'Australia/Melbourne'], ['Auckland', -36.8485, 174.7633, 'Pacific/Auckland'],
+    ['London', 51.5074, -0.1278, 'Europe/London'], ['Paris', 48.8566, 2.3522, 'Europe/Paris'], ['Frankfurt', 50.1109, 8.6821, 'Europe/Berlin'],
+    ['Zurich', 47.3769, 8.5417, 'Europe/Zurich'], ['Johannesburg', -26.2041, 28.0473, 'Africa/Johannesburg'], ['Nairobi', -1.2921, 36.8219, 'Africa/Nairobi'],
+    ['New York', 40.7128, -74.006, 'America/New_York'], ['Toronto', 43.6532, -79.3832, 'America/Toronto'], ['Chicago', 41.8781, -87.6298, 'America/Chicago'],
+    ['Dallas', 32.7767, -96.797, 'America/Chicago'], ['San Francisco', 37.7749, -122.4194, 'America/Los_Angeles'], ['Los Angeles', 34.0522, -118.2437, 'America/Los_Angeles'],
+  ];
+  let DEVICE_ZONE = IN;
+  try { DEVICE_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || IN; } catch (e) { /* keep India */ }
+  const zoneOk = (z) => typeof z === 'string' && E.tzOffsetMin(z, Date.now()) !== null;
+  const fmtOffset = (m) => `UTC${m >= 0 ? '+' : '-'}${String(Math.floor(Math.abs(m) / 60)).padStart(2, '0')}:${String(Math.abs(m) % 60).padStart(2, '0')}`;
+  // Private, git-ignored inputs: pakshi-data.js (timetables) and personal.js (birth details, profiles)
+  const ME = window.PAKSHI_PERSONAL || null;
+  if (!window.PAKSHI_TABLES || !ME || !ME.birth) { showSetup(); return; }
+  const BIRTH = ME.birth;
+  const NATAL = ME.natal || null;
+  const BIRTH_BIRD = E.birthBird(BIRTH);
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('pc.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('pc.' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+  };
+  const DEFAULT_PLACE = { name: 'Chennai', lat: 13.0827, lon: 80.2707, zone: IN, gps: false };
+  const validPlace = (pl) => pl && typeof pl.name === 'string' && Number.isFinite(pl.lat) && Number.isFinite(pl.lon)
+    && Math.abs(pl.lat) <= 60 && Math.abs(pl.lon) <= 180 && (zoneOk(pl.zone) || (Number.isFinite(pl.tz) && Math.abs(pl.tz) <= 840));
+  const withZone = (pl) => (zoneOk(pl.zone) ? pl : { ...pl, zone: pl.tz === 330 ? IN : DEVICE_ZONE });
+  const storedPlace = store.get('place', DEFAULT_PLACE);
+  const storedBird = store.get('bird', BIRTH_BIRD.chosen);
+  const state = {
+    place: validPlace(storedPlace) ? withZone(storedPlace) : DEFAULT_PLACE,
+    bird: typeof storedBird === 'string' && 'VOCKP'.includes(storedBird) && storedBird.length === 1 ? storedBird : BIRTH_BIRD.chosen,
+    view: 0, heading: null, chime: store.get('chime', false), lastKey: null,
+  };
+  const cache = new Map();
+
+  const curTz = (ms) => { const t = E.tzOffsetMin(state.place.zone, ms); return t == null ? 330 : t; };
+  const hhmm = (ms, tz) => E.localHHMM(ms, tz == null ? curTz(ms) : tz);
+  const localDate = (ms) => { const d = new Date(ms + curTz(ms) * MIN); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
+  const dayTz = (dt) => curTz(Date.UTC(dt.y, dt.m - 1, dt.d, 6));
+  const addDays = (o, n) => { const d = new Date(Date.UTC(o.y, o.m - 1, o.d + n)); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
+  function day(dt) {
+    const k = [dt.y, dt.m, dt.d, state.place.lat.toFixed(3), state.place.lon.toFixed(3), state.place.zone, state.bird].join('|');
+    if (!cache.has(k)) {
+      if (cache.size > 12) cache.clear();
+      cache.set(k, E.computeDay({ ...dt, lat: state.place.lat, lon: state.place.lon, tzMin: dayTz(dt), bird: state.bird, natal: NATAL }));
+    }
+    return cache.get(k);
+  }
+  function currentDay(now) {
+    const today = localDate(now);
+    const d = day(today);
+    return now < d.sunrise ? day(addDays(today, -1)) : d;
+  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const list = (arr) => '<ul>' + arr.map((x) => `<li>${esc(x)}</li>`).join('') + '</ul>';
+  const birdName = (b) => E.BIRD[b];
+
+  function showSetup() {
+    document.querySelectorAll('#shell > section').forEach((s) => { s.hidden = true; });
+    const n = document.getElementById('now');
+    n.hidden = false;
+    n.innerHTML = '<h2>Setup needed</h2><p>This public version does not include the Pancha Pakshi timetables or anyone\'s birth details.</p>'
+      + '<ol><li>Create <b>pakshi-data.js</b> from your own course PDFs: <code>python engine/parse_pdfs.py "&lt;pdf folder&gt;"</code>, then copy it next to this page.</li>'
+      + '<li>Copy <b>personal.example.js</b> to <b>personal.js</b> and fill in your details.</li></ol>'
+      + '<p class="note">Both files are git-ignored so they never reach GitHub.</p>';
+  }
+
+  // ---------- render ----------
+  const RING_C = 2 * Math.PI * 44;
+  const ringOffset = (p, now) => RING_C * (1 - Math.min(1, Math.max(0, (p.end - now) / (p.end - p.start))));
+  function ringSvg(p, now) {
+    return `<svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--line)" stroke-width="9"/>`
+      + `<circle id="ringArc" cx="52" cy="52" r="44" fill="none" stroke="var(--rc, var(--accent))" stroke-width="9" stroke-linecap="round" stroke-dasharray="${RING_C}" stroke-dashoffset="${ringOffset(p, now)}"/></svg>`;
+  }
+  function renderNow(d, now) {
+    const p = d.periods.find((x) => now >= x.start && now < x.end) || d.periods[0];
+    const el = $('now');
+    el.dataset.r = p.rating.key;
+    const left = Math.max(0, Math.round((p.end - now) / MIN));
+    const half = d.halves.find((h) => h.half === p.half);
+    const flags = [];
+    if (p.flags.rahu) flags.push('Rahu Kalam');
+    if (p.flags.yamagandam) flags.push('Yamagandam');
+    if (p.flags.kuligai) flags.push('Kuligai');
+    if (half.isPadu) flags.push('Padu Pakshi');
+    if (half.isAdhikara) flags.push('Your bird has authority');
+    if (d.chandrashtama) flags.push('Chandrashtamam');
+    const idx = d.periods.indexOf(p);
+    const upcoming = d.periods.slice(idx + 1, idx + 4);
+    el.innerHTML = `
+      <div class="hero">
+        <div class="ring">${ringSvg(p, now)}<div class="left"><b id="countdown">${left}</b><small>min left</small></div></div>
+        <div>
+          <span class="pill">${p.rating.label}</span>
+          <div class="big">${esc(p.sub.birdName)} ${esc(p.sub.actName)}</div>
+          <div class="window">${hhmm(p.start)} – ${hhmm(p.end)} · Yama ${p.yama} ${p.half === 'd' ? 'day' : 'night'}</div>
+        </div>
+      </div>
+      ${upcoming.length ? `<div class="next" aria-label="Coming up">${upcoming.map((u) => `<span data-r="${u.rating.key}"><b class="mono">${hhmm(u.start)}</b> ${u.rating.label}</span>`).join('')}</div>` : ''}
+      <dl class="kv">
+        <dt>Your bird</dt><dd>${esc(birdName(state.bird))} is <b>${esc(p.main.name)}</b> this yama</dd>
+        <dt>Sub-period</dt><dd>${esc(p.sub.birdName)} (${esc(p.sub.rel)}) ${esc(p.sub.actName)} = <b>${esc(p.sub.palan)}</b></dd>
+        <dt>Breath</dt><dd>${p.swaraKey === 'L' ? '☾' : '☀'} ${esc(p.swara)} · harmony ${p.swaraInfo.harmony + 1}/3</dd>
+        <dt>Rising sign</dt><dd>${esc(p.lagna.name)} · ${esc(p.lagna.nature)} · bird ${esc(p.lagna.bird)} (${esc(p.lagna.rel)})</dd>
+        <dt>Hora</dt><dd>${esc(p.hora)}</dd>
+      </dl>
+      ${flags.length ? '<div>' + flags.map((f) => `<span class="flag">${esc(f)}</span>`).join('') + '</div>' : ''}
+      <div class="lists">
+        <div><div class="eyebrow">Do</div>${list(p.dos)}</div>
+        <div><div class="eyebrow">Don't</div>${list(p.donts)}</div>
+      </div>
+      ${p.bodyCare ? `<div class="note">Take care of: ${esc(p.bodyCare)}</div>` : ''}`;
+    return p;
+  }
+
+  function sunNow(now) {
+    const A = window.Astronomy;
+    const t = A.MakeTime(new Date(now));
+    const obs = new A.Observer(state.place.lat, state.place.lon, 0);
+    const pick = (body) => { const eq = A.Equator(body, t, obs, true, true); return A.Horizon(t, obs, eq.ra, eq.dec, 'normal'); };
+    const sun = pick(A.Body.Sun);
+    if (sun.altitude > -2) return { body: 'Sun', az: sun.azimuth, alt: sun.altitude };
+    const moon = pick(A.Body.Moon);
+    return moon.altitude > 0 ? { body: 'Moon', az: moon.azimuth, alt: moon.altitude } : null;
+  }
+  const compass16 = (az) => ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'][Math.round(az / 22.5) % 16];
+  const DIR_AZ = { North: 0, East: 90, South: 180, West: 270 };
+
+  function renderDial(p, now) {
+    const rot = state.heading == null ? 0 : -state.heading;
+    const sky = sunNow(now);
+    const pt = (az, r) => { const a = ((az - 90) * Math.PI) / 180; return [100 + r * Math.cos(a), 100 + r * Math.sin(a)]; };
+    let s = `<circle cx="100" cy="100" r="92" fill="var(--sunk)" stroke="var(--line)"/>`;
+    s += `<g transform="rotate(${rot} 100 100)">`;
+    for (const [name, az] of Object.entries(DIR_AZ)) {
+      if (p.direction.avoidTravel.includes(name)) {
+        const [x1, y1] = pt(az - 22, 92), [x2, y2] = pt(az + 22, 92);
+        s += `<path d="M100 100 L${x1} ${y1} A92 92 0 0 1 ${x2} ${y2} Z" fill="var(--r-avoid)" opacity=".18"/>`;
+      }
+    }
+    for (let a = 0; a < 360; a += 30) { const [x1, y1] = pt(a, 86), [x2, y2] = pt(a, 92); s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)"/>`; }
+    for (const [name, az] of Object.entries(DIR_AZ)) { const [x, y] = pt(az, 74); s += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-weight="${name === p.direction.face ? 700 : 400}">${name[0]}</text>`; }
+    if (p.direction.face !== 'Centre') {
+      const [x, y] = pt(DIR_AZ[p.direction.face], 58);
+      s += `<line x1="100" y1="100" x2="${x}" y2="${y}" stroke="var(--rc, var(--accent))" stroke-width="6" stroke-linecap="round"/>`;
+      s += `<circle cx="${x}" cy="${y}" r="7" fill="var(--rc, var(--accent))"/>`;
+    } else {
+      s += `<circle cx="100" cy="100" r="16" fill="var(--rc, var(--accent))" opacity=".85"/>`;
+    }
+    if (sky) { const [x, y] = pt(sky.az, 92); s += `<circle cx="${x}" cy="${y}" r="8" fill="${sky.body === 'Sun' ? 'var(--sun)' : 'var(--muted)'}" stroke="var(--surface)" stroke-width="2"/>`; }
+    s += `</g><circle cx="100" cy="100" r="5" fill="var(--fg)"/>`;
+    if (state.heading != null) s += `<path d="M100 4 l6 10 h-12 z" fill="var(--fg)"/>`;
+    const dial = $('dial');
+    dial.innerHTML = s;
+    dial.closest('.panel').dataset.r = p.rating.key;
+
+    const skyLine = sky
+      ? `${sky.body} is at ${Math.round(sky.az)}° (${compass16(sky.az)}), ${Math.round(sky.alt)}° up. Face the ${sky.body.toLowerCase()}, then turn to find ${esc(p.direction.face)}.`
+      : 'Sun and Moon are below the horizon now; use a compass app or a known landmark.';
+    $('dirNote').innerHTML = `
+      <div><b>Face ${esc(p.direction.face)}</b>${p.direction.face === 'Centre' ? ' (stay at your base, no directional move)' : ''}: ${esc(p.direction.why)}.</div>
+      <div>${p.direction.travelOk ? `Good time to travel toward <b>${esc(p.direction.ownDir)}</b>.` : `Avoid travelling: <b>${esc(p.direction.avoidTravel.join(', '))}</b> (Soolam ${esc(p.direction.soolam)} + breath rule).`}</div>
+      <div class="note">${skyLine}${state.heading != null ? ' Dial turns with your phone.' : ''}</div>`;
+  }
+
+  function renderStrip(d, now) {
+    const total = d.nextSunrise - d.sunrise;
+    $('strip').innerHTML = d.periods.map((p) => `<i data-r="${p.rating.key}" style="flex-grow:${p.end - p.start}" title="${hhmm(p.start)}–${hhmm(p.end)} ${p.rating.label}"></i>`).join('')
+      + (now >= d.sunrise && now < d.nextSunrise ? `<span class="nowmark" style="left:calc(${((now - d.sunrise) / total) * 100}% - 1px)"></span>` : '');
+    const ticks = [d.sunrise, d.sunrise + total / 4, d.sunset, d.sunset + (d.nextSunrise - d.sunset) / 2, d.nextSunrise];
+    $('ticks').innerHTML = ticks.map((t) => `<span>${hhmm(t)}</span>`).join('');
+    $('stripTitle').textContent = `${state.view === 0 ? 'Today' : 'Tomorrow'} · ${d.dayName}, sunrise to sunrise`;
+  }
+
+  function renderFacts(d) {
+    const h = d.halves;
+    $('facts').innerHTML = `
+      <div class="eyebrow">Panchang · ${esc(state.place.name)} · ${esc(state.place.zone.replace(/_/g, ' '))} (${fmtOffset(curTz(d.sunrise))})</div>
+      <dl class="kv">
+        <dt>Sunrise / set</dt><dd class="mono">${hhmm(d.sunrise)} / ${hhmm(d.sunset)}</dd>
+        <dt>Tithi</dt><dd>${esc(d.tithi.paksha)} ${esc(d.tithi.name)} (${esc(d.tithi.class)}) until <span class="mono">${hhmm(d.tithi.endsAt)}</span></dd>
+        <dt>Nakshatra</dt><dd>${esc(d.nakshatra.name)} until <span class="mono">${hhmm(d.nakshatra.endsAt)}</span> · Tara: ${esc(d.tara.name)} (${d.tara.good ? 'favourable' : 'unfavourable'})</dd>
+        <dt>Moon sign</dt><dd>${esc(d.moonRasi.name)}${d.chandrashtama ? ' · <b>Chandrashtamam for you</b>' : ''}</dd>
+        <dt>Rahu Kalam</dt><dd class="mono">${hhmm(d.kalams.rahu[0])} – ${hhmm(d.kalams.rahu[1])}</dd>
+        <dt>Yamagandam</dt><dd class="mono">${hhmm(d.kalams.yamagandam[0])} – ${hhmm(d.kalams.yamagandam[1])}</dd>
+        <dt>Kuligai</dt><dd class="mono">${hhmm(d.kalams.kuligai[0])} – ${hhmm(d.kalams.kuligai[1])}</dd>
+        <dt>Soolam</dt><dd>${esc(d.soolam.dir)} · remedy: take a little ${esc(d.soolam.remedy)} before leaving</dd>
+        <dt>Breath at sunrise</dt><dd>${d.swaraAtSunrise === 'L' ? 'Left (Moon)' : 'Right (Sun)'}, then switches every hour</dd>
+        <dt>Day birds</dt><dd>Padu: ${esc(birdName(h[0].padu))} · Authority: ${esc(birdName(h[0].adhikara))}${h[0].isPadu ? ' · <b>your bird is Padu</b>' : ''}</dd>
+        <dt>Night birds</dt><dd>Padu: ${esc(birdName(h[1].padu))} · Authority: ${esc(birdName(h[1].adhikara))}${h[1].isPadu ? ' · <b>your bird is Padu</b>' : ''}</dd>
+        <dt>Your bird</dt><dd>${esc(birdName(state.bird))}: ${esc(h[0].meta.dir)}, colour ${esc(h[0].meta.colour.toLowerCase())} (${h[0].paksha === 's' ? 'waxing' : 'waning'} moon)</dd>
+      </dl>`;
+  }
+
+  function renderKarma(d, p) {
+    const best = d.periods.filter((x) => x.ashtakarma.some((k) => /Strong/.test(k.strength))).slice(0, 6);
+    const cls = (s) => ({ 'Very strong': 's-vs', Strong: 's-s', Fair: 's-f', Weak: 's-w' }[s]);
+    $('karma').innerHTML = `
+      <h2>Ashtakarma window</h2>
+      <div class="note">Lagna now: <b>${esc(p.lagna.name)}</b> (${esc(p.lagna.nature)} sign) · Tithi now: <b>${esc(p.tithiNow.name)}</b> (${esc(p.tithiNow.class)}) · ${p.paksha === 's' ? 'Waxing' : 'Waning'} moon, ${p.half === 'd' ? 'day' : 'night'}</div>
+      ${p.ashtakarma.length ? '<ul class="karma">' + p.ashtakarma.map((k) => `<li>${esc(k.name)}: face <b>${esc(k.face)}</b> · <span class="strength ${cls(k.strength)}">${esc(k.strength)}</span></li>`).join('') + '</ul>' : '<div>No Ashtakarma suits this paksha and time of day.</div>'}
+      ${best.length ? `<div class="eyebrow">Strongest windows ${state.view === 0 ? 'today' : 'tomorrow'}</div><div class="mono" style="font-size:.85rem">${best.map((x) => `${hhmm(x.start)}–${hhmm(x.end)}`).join(' · ')}</div>` : ''}
+      <p class="note">Traditional timing (paksha, day or night, facing direction), stronger when your bird or the sub-period is Ruling or Eating. Fixed signs favour lasting results, movable signs favour removal; Rikta tithis (4, 9, 14) weaken attraction karmas (general Vedic muhurta). Traditional rule: practise only with initiation and only for good, protective purposes.</p>`;
+  }
+
+  function renderTimeline(d, now) {
+    let html = '';
+    let lastHalf = null;
+    for (const p of d.periods) {
+      if (p.half !== lastHalf) { html += `<div class="halfhead">${p.half === 'd' ? 'Day' : 'Night'} · ${p.paksha === 's' ? 'waxing' : 'waning'} moon</div>`; lastHalf = p.half; }
+      const cur = now >= p.start && now < p.end;
+      html += `<details data-r="${p.rating.key}" class="${cur ? 'cur' : ''}"${cur ? ' open' : ''}>
+        <summary><span class="when">${hhmm(p.start)}–${hhmm(p.end)}</span><span class="what">${esc(p.sub.birdName)} ${esc(p.sub.actName)} · ${esc(p.sub.palan)} · face ${esc(p.direction.face)} · ${p.swaraKey === 'L' ? '☾' : '☀'}</span><span class="tag">${p.rating.label}</span></summary>
+        <div class="body">
+          <div>Yama ${p.yama}: your bird ${esc(p.main.name)}. Breath ${esc(p.swara)}. Lagna ${esc(p.lagna.name)}. Hora ${esc(p.hora)}.</div>
+          <div><b>Do:</b> ${esc(p.dos.join('; '))}</div>
+          <div><b>Don't:</b> ${esc(p.donts.join('; '))}</div>
+          ${p.notes.length ? `<div><b>Note:</b> ${esc(p.notes.join('; '))}</div>` : ''}
+        </div></details>`;
+    }
+    $('timeline').innerHTML = html;
+    $('tlTitle').textContent = `Full timetable · ${d.dayName}`;
+  }
+
+    const PROFILE = (ME && ME.profiles) || {};
+  const SWATCH = { Yellow: '#d4a017', Black: '#202020', White: '#ffffff', Red: '#c0392b', Green: '#2e8b57' };
+  // simple original bird marks for the medallion (44 x 44)
+  const MARK = {
+    V: '<path class="ink" d="M5 31c6-11 14-16 23-16 6 0 9 3 11 6l5 1-4 3c-1 4-5 7-10 7-6 0-10-2-14 0z"/><path class="ink" d="M17 15c2-4 6-6 10-5-3 1-5 3-6 6z"/><circle class="eye" cx="32" cy="21" r="1.6"/>',
+    O: '<path class="ink" d="M10 12l6 5h12l6-5v20c0 7-6 10-12 10s-12-3-12-10z"/><circle class="eye" cx="17.5" cy="24" r="3"/><circle class="eye" cx="26.5" cy="24" r="3"/>',
+    C: '<path class="ink" d="M4 27c8-2 14-8 24-8 5 0 8 2 10 4l6 1-6 3c-2 5-7 8-14 8-8 0-14-3-20-8z"/><circle class="eye" cx="32" cy="23" r="1.5"/>',
+    K: '<path class="ink" d="M14 7c2 0 3 2 4 4 2-2 4-2 6 0-1 2-3 3-5 4 6 2 10 8 10 14 0 8-7 12-14 12S5 37 5 29c0-6 4-10 8-12-2-3-2-7 1-10z"/><circle class="eye" cx="17" cy="20" r="1.5"/>',
+    P: '<path class="ink" d="M22 5c3 0 5 3 4 6l-2 6c8 2 14 10 14 18 0 3-2 4-4 4H10c-2 0-4-1-4-4 0-8 6-16 14-18l-2-6c-1-3 1-6 4-6z"/><circle class="eye" cx="22" cy="9.5" r="1.4"/>',
+  };
+
+  // ---------- swara ----------
+  const SW = { L: { sym: '☾', name: 'Left', full: 'Moon · Ida' }, R: { sym: '☀', name: 'Right', full: 'Sun · Pingala' } };
+  function breathCheck() { return store.get('breath', null); }
+  function renderSwara(d, now, p) {
+    const hours = d.swaraHours;
+    const h = hours.find((x) => now >= x.start && now < x.end) || hours[0];
+    const left = Math.max(0, Math.round((h.end - now) / MIN));
+    const nextKey = h.key === 'L' ? 'R' : 'L';
+    const info = p.swaraInfo;
+    const chk = breathCheck();
+    const mine = chk && ['L', 'R', 'B'].includes(chk.key) && chk.at >= h.start && chk.at < h.end ? chk.key : null;
+    let verdict = '', vr = 'average';
+    const good = p.rating.key === 'excellent' || p.rating.key === 'good';
+    if (!mine) {
+      verdict = 'Check your breath: close one nostril with a finger and breathe out, then the other. Tap the side that flows more freely.';
+    } else if (mine === 'B') {
+      verdict = 'Both nostrils flowing (Sushumna): good only for meditation and prayer. Do not start worldly work now.'; vr = 'poor';
+    } else if (mine === h.key) {
+      verdict = good ? `Your breath matches the ${SW[h.key].name.toLowerCase()} hour and the Pakshi period is ${p.rating.label}: a strong moment to act.`
+        : `Your breath matches the hour, but the Pakshi period is ${p.rating.label}: keep to the breath's lighter work only.`;
+      vr = good ? 'excellent' : 'average';
+    } else {
+      verdict = `Your breath is ${SW[mine].name.toLowerCase()} while the hour calls for ${SW[h.key].name.toLowerCase()}. Wait, or rest on your ${h.key === 'L' ? 'right' : 'left'} side for a few minutes to shift it before anything important.`;
+      vr = 'poor';
+    }
+    const total = d.nextSunrise - d.sunrise;
+    const nowPos = now >= d.sunrise && now < d.nextSunrise ? `<span class="nowmark" style="left:calc(${((now - d.sunrise) / total) * 100}% - 1px)"></span>` : '';
+    const harmonyChip = (label, k) => `<span class="chip">${label}: <b>${SW[k].sym} ${SW[k].name}</b>${k === h.key ? ' ✓' : ''}</span>`;
+    $('swara').innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="eyebrow">Swara now · Shiva Swarodaya</div>
+        <span class="mono note">switches in ${left} min</span>
+      </div>
+      <div class="nostrils">
+        <div class="nos L${h.key === 'L' ? ' on' : ''}"><span class="sym">☾</span><b>Left breath</b><small>Moon · Ida · calm, lasting work</small></div>
+        <div class="nos R${h.key === 'R' ? ' on' : ''}"><span class="sym">☀</span><b>Right breath</b><small>Sun · Pingala · active, hard work</small></div>
+      </div>
+      <div class="harmony">
+        ${harmonyChip('Hour', h.key)}${harmonyChip(d.dayName, d.swaraDay)}${harmonyChip('Rising sign', info.lagnaSwara)}
+      </div>
+      <div class="check" role="group" aria-label="My breath now">
+        <span class="note">My breath now:</span>
+        <button type="button" data-b="L" aria-pressed="${mine === 'L'}">☾ Left</button>
+        <button type="button" data-b="R" aria-pressed="${mine === 'R'}">☀ Right</button>
+        <button type="button" data-b="B" aria-pressed="${mine === 'B'}">Both</button>
+      </div>
+      <div class="verdict-line" data-r="${vr}">${esc(verdict)}</div>
+      <div class="lists">
+        <div><div class="eyebrow">${SW[h.key].sym} Good in this breath</div>${list(info.good.slice(0, 4))}</div>
+        <div><div class="eyebrow">Avoid in this breath</div>${list(info.avoid.concat([`Step out with your ${SW[h.key].name.toLowerCase()} foot first`]))}</div>
+      </div>
+      <div class="eyebrow">Breath through the day · ☾ left ☀ right</div>
+      <div class="swstrip">${hours.map((x) => `<i class="${x.key}" title="${hhmm(x.start)} ${SW[x.key].name}"></i>`).join('')}${nowPos}</div>
+      <div class="ticks"><span>${hhmm(d.sunrise)}</span><span>${hhmm(d.sunrise + total / 2)}</span><span>${hhmm(d.nextSunrise)}</span></div>
+      <p class="note">At sunrise the ${d.swaraAtSunrise === 'L' ? 'left' : 'right'} breath should flow (tithi rule), then the sides change every hour. Next: ${SW[nextKey].sym} ${SW[nextKey].name} at ${hhmm(h.end)}.</p>`;
+    $('swara').querySelectorAll('.check button').forEach((b) => {
+      b.onclick = () => { store.set('breath', { key: b.dataset.b, at: Date.now() }); renderSwara(d, Date.now(), p); };
+    });
+  }
+
+  function renderMyBird(d) {
+    const b = state.bird;
+    const pr = PROFILE[b] || { ta: '', element: ['—', '—'], time: '—', ring: '—', worship: '—', family: '—', guard: '—', upasana: '—',
+      padu: [['—'], ['—']], authority: [['—'], ['—']], traits: [] };
+    const pk = d.halves[0].paksha === 's' ? 0 : 1;
+    const mNow = E.META[b][pk === 0 ? 's' : 'k'];
+    const isPadu = d.halves.some((h) => h.isPadu);
+    const isAuth = d.halves.some((h) => h.isAdhikara);
+    const v = BIRTH_BIRD.votes;
+    const L = ME.labels || {};
+    const rows = [[L.name || 'Name', v.name], [L.lagna || 'Lagna', v.lagna], [L.rasi || 'Rasi', v.rasi], [L.nakshatra || 'Star', v.nakshatra], [L.tithi || 'Tithi', v.tithi]];
+    const nameBird = v.name;
+    const other = b === BIRTH_BIRD.chosen ? nameBird : BIRTH_BIRD.chosen;
+    const names = (x) => x.split('').map(birdName).join(', ');
+    const sw = (c) => `<span class="swatch" style="--sw:${SWATCH[c] || 'var(--muted)'}"></span>${esc(c)}`;
+    const el = $('myBird');
+    el.style.setProperty('--birdc', SWATCH[mNow.colour] || 'var(--accent)');
+    el.innerHTML = `
+      <div class="eyebrow">My Pancha Pakshi</div>
+      <div class="bird-head">
+        <div class="medal" aria-hidden="true"><svg viewBox="0 0 44 44">${MARK[b]}</svg></div>
+        <div>
+          <h2>${esc(birdName(b))} <span class="tamil">· ${esc(pr.ta)}</span></h2>
+          <div class="note">${b === BIRTH_BIRD.chosen ? 'Birth bird by the five-way Bhogar method' : esc(ME.nameBirdNote || 'Name bird')}</div>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip">${pk === 0 ? 'Waxing' : 'Waning'} moon: face <b>${esc(mNow.dir)}</b></span>
+        <span class="chip">Lucky colour ${sw(mNow.colour)}</span>
+        <span class="chip">Element <b>${esc(pr.element[pk])}</b></span>
+        ${isPadu ? `<span class="chip warn"><b>${esc(d.dayName)} is a Padu day</b> for your bird</span>` : ''}
+        ${isAuth ? `<span class="chip good"><b>Your bird has authority</b> ${esc(d.dayName)}</span>` : ''}
+      </div>
+      <dl class="kv">
+        <dt>Friends</dt><dd>${esc(names(mNow.friends))}</dd>
+        <dt>Enemies</dt><dd>${esc(names(mNow.enemies))}</dd>
+        <dt>Body care</dt><dd>${esc(mNow.body)}</dd>
+        <dt>Outlook</dt><dd>${esc(pr.time)}</dd>
+      </dl>
+      <details>
+        <summary>Waxing and waning moon details</summary>
+        <div class="pk"><table class="mini"><thead><tr><th></th><th>Waxing (Valarpirai)</th><th>Waning (Theipirai)</th></tr></thead><tbody>
+          <tr><td>Direction</td><td>${esc(E.META[b].s.dir)}</td><td>${esc(E.META[b].k.dir)}</td></tr>
+          <tr><td>Colour</td><td>${sw(E.META[b].s.colour)}</td><td>${sw(E.META[b].k.colour)}</td></tr>
+          <tr><td>Element</td><td>${esc(pr.element[0])}</td><td>${esc(pr.element[1])}</td></tr>
+          <tr><td>Padu days</td><td>${esc(pr.padu[0].join(', '))}</td><td>${esc(pr.padu[1].join(', '))}</td></tr>
+          <tr><td>Authority</td><td>${esc(pr.authority[0].join('; '))}</td><td>${esc(pr.authority[1].join('; '))}</td></tr>
+          <tr><td>Friends</td><td>${esc(names(E.META[b].s.friends))}</td><td>${esc(names(E.META[b].k.friends))}</td></tr>
+          <tr><td>Enemies</td><td>${esc(names(E.META[b].s.enemies))}</td><td>${esc(names(E.META[b].k.enemies))}</td></tr>
+        </tbody></table></div>
+      </details>
+      <details>
+        <summary>Nature, deities and strengthening</summary>
+        <ul class="traits">${pr.traits.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+        <dl class="kv" style="margin-top:8px">
+          <dt>Worship</dt><dd>${esc(pr.worship)}</dd>
+          <dt>Family deity</dt><dd>${esc(pr.family)}</dd>
+          <dt>Guardian</dt><dd>${esc(pr.guard)}</dd>
+          <dt>Upasana</dt><dd>${esc(pr.upasana)}</dd>
+          <dt>Ring</dt><dd>${esc(pr.ring)}</dd>
+        </dl>
+      </details>
+      <details>
+        <summary>How your bird was chosen</summary>
+        <div class="note">${esc(ME.birthLine || '')}</div>
+        <table class="mini"><thead><tr><th>Method</th><th>Bird</th></tr></thead><tbody>
+          ${rows.map(([m, x]) => `<tr><td>${esc(m)}</td><td>${birdName(x)}</td></tr>`).join('')}
+        </tbody></table>
+        <div style="margin-top:6px">Result: <b>${birdName(BIRTH_BIRD.chosen)}</b>, because ${esc(BIRTH_BIRD.rule)}.</div>
+      </details>
+      ${other !== b ? `<button class="btn ghost" id="swapBird" type="button">Show ${birdName(other)} (${other === nameBird ? 'name bird' : 'five-way bird'}) instead</button>` : ''}`;
+    if ($('swapBird')) $('swapBird').onclick = () => { state.bird = other; store.set('bird', other); cache.clear(); render(); };
+  }
+
+  function render() {
+    const now = Date.now();
+    const cur = currentDay(now);
+    const shown = state.view === 0 ? cur : day(addDays(cur.date, 1));
+    const p = renderNow(cur, now);
+    renderSwara(cur, now, p);
+    renderDial(p, now);
+    renderStrip(shown, now);
+    renderFacts(shown);
+    renderKarma(shown, state.view === 0 ? p : shown.periods[0]);
+    renderTimeline(shown, now);
+    renderMyBird(cur);
+    $('placeName').textContent = state.place.name;
+    $('placeDot').classList.toggle('live', !!state.place.gps);
+    $('who').textContent = `${ME.name ? ME.name + ' · ' : ''}${birdName(state.bird)} · Bhogar Pancha Pakshi`;
+    const key = p.start;
+    if (state.lastKey && state.lastKey !== key && state.chime) chime();
+    state.lastKey = key;
+  }
+
+  function tick() {
+    const now = Date.now();
+    const cur = currentDay(now);
+    const p = cur.periods.find((x) => now >= x.start && now < x.end);
+    if (!p || p.start !== state.lastKey) { render(); return; }
+    const cd = $('countdown');
+    if (cd) cd.textContent = String(Math.max(0, Math.round((p.end - now) / MIN)));
+    const arc = $('ringArc');
+    if (arc) arc.setAttribute('stroke-dashoffset', String(ringOffset(p, now)));
+    const h = cur.swaraHours.find((x) => now >= x.start && now < x.end);
+    if (h && h.start !== state.lastSwara) { state.lastSwara = h.start; renderSwara(cur, now, p); }
+  }
+
+  // ---------- place ----------
+  function fillPlaceForm() {
+    $('citySel').innerHTML = CITIES.map((c, i) => `<option value="${i}"${c[0] === state.place.name ? ' selected' : ''}>${c[0]}</option>`).join('')
+      + `<option value="custom"${CITIES.some((c) => c[0] === state.place.name) ? '' : ' selected'}>Custom / GPS</option>`;
+    $('latIn').value = state.place.lat; $('lonIn').value = state.place.lon;
+    let zones = [];
+    try { zones = Intl.supportedValuesOf('timeZone'); } catch (e) { zones = []; }
+    if (!zones.length) zones = Array.from(new Set(CITIES.map((c) => c[3]).concat([DEVICE_ZONE])));
+    if (!zones.includes(state.place.zone)) zones.unshift(state.place.zone);
+    $('zoneSel').innerHTML = zones.map((z) => `<option value="${esc(z)}"${z === state.place.zone ? ' selected' : ''}>${esc(z.replace(/_/g, ' '))}</option>`).join('');
+  }
+  function setPlace(pl) { state.place = pl; store.set('place', pl); cache.clear(); fillPlaceForm(); render(); }
+  function nearestCity(lat, lon) {
+    let best = null, bd = Infinity;
+    for (const c of CITIES) { const d = Math.hypot(c[1] - lat, (c[2] - lon) * Math.cos((lat * Math.PI) / 180)); if (d < bd) { bd = d; best = c; } }
+    return bd * 111 < 25 ? best[0] : null;
+  }
+  $('placeBtn').onclick = () => { const p = $('placePanel'); p.hidden = !p.hidden; $('placeBtn').setAttribute('aria-expanded', String(!p.hidden)); };
+  $('citySel').onchange = (e) => { if (e.target.value === 'custom') return; const c = CITIES[+e.target.value]; setPlace({ name: c[0], lat: c[1], lon: c[2], zone: c[3], gps: false }); };
+  $('coordBtn').onclick = () => {
+    const lat = parseFloat($('latIn').value), lon = parseFloat($('lonIn').value), zone = $('zoneSel').value;
+    if (!(Math.abs(lat) <= 60 && Math.abs(lon) <= 180 && zoneOk(zone))) { $('gpsNote').textContent = 'Enter latitude between -60 and 60, longitude between -180 and 180, and pick a time zone.'; return; }
+    setPlace({ name: nearestCity(lat, lon) || `${lat.toFixed(2)}, ${lon.toFixed(2)}`, lat, lon, zone, gps: false });
+  };
+
+  let watchId = null;
+  function startGps(fromClick) {
+    if (!('geolocation' in navigator)) { if (fromClick) $('gpsNote').textContent = 'This browser has no GPS access. Pick your town from the list instead.'; return; }
+    try {
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      watchId = navigator.geolocation.watchPosition((pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        if (Math.abs(lat) > 60) return; // sunrise/sunset not reliable at polar latitudes
+        const moved = !state.place.gps || Math.hypot(lat - state.place.lat, lon - state.place.lon) * 111 > 3;
+        if (moved) setPlace({ name: nearestCity(lat, lon) || `Near ${lat.toFixed(2)}, ${lon.toFixed(2)}`, lat, lon, zone: DEVICE_ZONE, gps: true });
+      }, () => { if (fromClick) $('gpsNote').textContent = 'GPS is not available on this page (claude.ai pages cannot read location). Pick your town, or save this app and open it in your phone browser for automatic GPS.'; },
+      { enableHighAccuracy: false, maximumAge: 10 * MIN, timeout: 20000 });
+    } catch (e) { /* blocked by the page frame */ }
+  }
+  $('gpsBtn').onclick = () => startGps(true);
+
+  // ---------- compass ----------
+  function onOrient(e) {
+    let h = null;
+    if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;
+    else if (e.absolute && typeof e.alpha === 'number') h = (360 - e.alpha) % 360;
+    if (h == null) return;
+    const first = state.heading == null;
+    state.heading = h;
+    if (first) $('compassBtn').hidden = true;
+    const now = Date.now();
+    const p = currentDay(now).periods.find((x) => now >= x.start && now < x.end);
+    if (p) renderDial(p, now);
+  }
+  function startCompass() {
+    try {
+      window.addEventListener('deviceorientationabsolute', onOrient);
+      window.addEventListener('deviceorientation', onOrient);
+    } catch (e) { /* no sensors */ }
+  }
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      $('compassBtn').hidden = false;
+      $('compassBtn').onclick = () => DeviceOrientationEvent.requestPermission().then((r) => { if (r === 'granted') startCompass(); }).catch(() => {});
+    } else startCompass();
+  }
+
+  // ---------- chime ----------
+  let actx = null;
+  function chime() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = 660; g.gain.setValueAtTime(0.0001, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.2, actx.currentTime + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.9);
+      o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + 1);
+    } catch (e) { /* audio blocked */ }
+  }
+  $('chime').checked = !!state.chime;
+  $('chime').onchange = (e) => { state.chime = e.target.checked; store.set('chime', state.chime); if (state.chime) chime(); };
+
+  // ---------- saving files ----------
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function zipOne(name, text) {
+    const data = new TextEncoder().encode(text), fname = new TextEncoder().encode(name);
+    let crc = 0xffffffff; for (const b of data) crc = CRC[(crc ^ b) & 0xff] ^ (crc >>> 8); crc = (crc ^ 0xffffffff) >>> 0;
+    const lh = new DataView(new ArrayBuffer(30)), ch = new DataView(new ArrayBuffer(46)), end = new DataView(new ArrayBuffer(22));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, 0, 2], [12, 0x21, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, fname.length, 2], [28, 0, 2]]
+      .forEach(([o, v, n]) => (n === 4 ? lh.setUint32(o, v, true) : lh.setUint16(o, v, true)));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, 0, 2], [14, 0x21, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, fname.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, 0, 4]]
+      .forEach(([o, v, n]) => (n === 4 ? ch.setUint32(o, v, true) : ch.setUint16(o, v, true)));
+    const cdOff = 30 + fname.length + data.length;
+    [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, 1, 2], [10, 1, 2], [12, 46 + fname.length, 4], [16, cdOff, 4], [20, 0, 2]]
+      .forEach(([o, v, n]) => (n === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true)));
+    return new Blob([lh.buffer, fname, data, ch.buffer, fname, end.buffer], { type: 'application/zip' });
+  }
+  function buildIcs(days) {
+    const start = currentDay(Date.now()).date;
+    const all = [];
+    for (let i = 0; i < days; i++) all.push(day(addDays(start, i)));
+    return E.buildICS(all, { place: state.place.name, tz: curTz(Date.now()), quietFrom: '22:30', quietTo: '05:00' });
+  }
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'place';
+  function plainDownload(name, blob) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+  async function buildStandalone() {
+    const parts = await Promise.all(['astronomy.browser.min.js', 'pakshi-data.js', 'personal.js', 'pakshi-engine.js'].map((f) => fetch(f).then((r) => { if (!r.ok) throw new Error(f); return r.text(); })));
+    const css = $('app-css').textContent, js = $('app-js').textContent;
+    const safe = (s) => s.replace(/<\/script/gi, '<\\/script');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+      + '<title>Swara Pancha Pakshi Compass</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">'
+      + `<style id="app-css">${css}</style></head><body>${SHELL_HTML}`
+      + parts.map((p) => `<script>${safe(p)}<\/script>`).join('') + `<script id="app-js">${safe(js)}<\/script></body></html>`;
+  }
+
+  let downloads = null;
+  const inViewer = !!(window.claude && typeof window.claude.use === 'function');
+  if (inViewer) {
+    window.claude.use('downloads').then((d) => { downloads = d; if (!d) { $('icsBtn').hidden = true; $('appBtn').hidden = true; $('saveNote').textContent = 'Saving files is not available in this view. Use the calendar file created on your PC.'; } }).catch(() => {});
+  }
+  async function save(filename, data, plainName, plainBlob) {
+    if (!inViewer) { plainDownload(plainName, plainBlob); $('saveNote').textContent = `Saved ${plainName}.`; return; }
+    if (!downloads) { $('saveNote').textContent = 'Saving files is not available in this view.'; return; }
+    try { await downloads.save({ filename, data }); $('saveNote').textContent = `Saved ${filename}.`; }
+    catch (e) { $('saveNote').textContent = e && e.code === 'declined' ? 'Save cancelled.' : 'Could not save the file here. Use the calendar file created on your PC.'; }
+  }
+  $('icsBtn').onclick = async () => {
+    $('saveNote').textContent = 'Preparing 30 days of alerts…';
+    await new Promise((r) => setTimeout(r, 30));
+    const ics = buildIcs(30);
+    const base = `pancha-pakshi-${slug(state.place.name)}`;
+    await save(`${base}.zip`, zipOne(`${base}.ics`, ics), `${base}.ics`, new Blob([ics], { type: 'text/calendar' }));
+  };
+  $('appBtn').onclick = async () => {
+    try {
+      const html = await buildStandalone();
+      await save('pakshi-compass.html', html, 'pakshi-compass.html', new Blob([html], { type: 'text/html' }));
+    } catch (e) { $('saveNote').textContent = 'Could not build the app file in this view.'; }
+  };
+
+  // ---------- tabs & boot ----------
+  $('tabToday').onclick = () => { state.view = 0; $('tabToday').setAttribute('aria-pressed', 'true'); $('tabTomorrow').setAttribute('aria-pressed', 'false'); render(); };
+  $('tabTomorrow').onclick = () => { state.view = 1; $('tabToday').setAttribute('aria-pressed', 'false'); $('tabTomorrow').setAttribute('aria-pressed', 'true'); render(); };
+  fillPlaceForm();
+  render();
+  setInterval(tick, 15000);
+  if (!inViewer) startGps(false);
+})();
+</script>

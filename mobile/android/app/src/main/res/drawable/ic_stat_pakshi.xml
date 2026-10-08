@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon: white vulture mark (original artwork) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="44" android:viewportHeight="44">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M5,31c6,-11 14,-16 23,-16 6,0 9,3 11,6l5,1 -4,3c-1,4 -5,7 -10,7 -6,0 -10,-2 -14,0z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M17,15c2,-4 6,-6 10,-5 -3,1 -5,3 -6,6z"/>
+</vector>

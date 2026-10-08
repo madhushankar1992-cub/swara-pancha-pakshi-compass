@@ -1,0 +1,28 @@
+# ---- Private: course timetables and personal details (never commit) ----
+**/pakshi-data.js
+**/pakshi_tables.json
+**/personal.js
+pc/config.json
+pc/state.json
+pc/*.log
+pc/*.log.old
+*.ics
+*.apk
+*.aab
+
+# ---- Generated / dependencies ----
+web/pakshi-engine.js
+pc/pakshi-engine.js
+node_modules/
+mobile/www/*
+!mobile/www/native.js
+mobile/android/app/src/main/assets/public/
+mobile/android/local.properties
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/capacitor-cordova-android-plugins/build/
+__pycache__/
+*.tmp
+.DS_Store
+Thumbs.db
